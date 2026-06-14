@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LabLog — Daily Lab Journal</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    :root {
+      --bg: #f0f4f8;
+      --bg-card: #ffffff;
+      --bg-input: #f8fafc;
+      --accent: #4a7ad3;
+      --accent-light: #e8f0fe;
+      --accent-glow: rgba(74, 122, 211, 0.2);
+      --success: #22c55e;
+      --gold: #f0c040;
+      --danger: #ef4444;
+      --text: #1e293b;
+      --text-dim: #64748b;
+      --text-bright: #0f172a;
+      --border: #e2e8f0;
+      --border-focus: #4a7ad3;
+      --shadow: 0 4px 24px rgba(0,0,0,0.06);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      --font-mono: 'Courier New', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    /* ===== LAYOUT ===== */
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    /* ===== HEADER ===== */
+    .app-header {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    .app-header .logo {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 16px;
+    }
+    .app-header .logo .icon {
+      width: 40px; height: 40px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; color: #fff;
+    }
+    .app-header .logo h1 {
+      font-size: 22px; font-weight: 700; color: var(--text-bright);
+    }
+    .app-header .logo h1 span { color: var(--accent); }
+    .app-header .logo .sub {
+      font-size: 12px; color: var(--text-dim); margin-top: -2px;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+    .profile-field label {
+      display: block; font-size: 11px; font-weight: 600;
+      color: var(--text-dim); margin-bottom: 3px; text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .profile-field input {
+      width: 100%; padding: 8px 12px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 14px; color: var(--text);
+      background: var(--bg-input);
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    .profile-field input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .profile-field input:disabled {
+      opacity: 0.7; cursor: not-allowed;
+    }
+
+    /* ===== DATE NAV ===== */
+    .date-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 20px;
+      box-shadow: var(--shadow); margin-bottom: 16px;
+    }
+    .date-nav .date-display {
+      font-size: 16px; font-weight: 600; color: var(--text-bright);
+    }
+    .date-nav .date-display .day-name {
+      font-size: 13px; color: var(--text-dim); font-weight: 400;
+    }
+    .date-nav .date-arrows {
+      display: flex; gap: 4px;
+    }
+    .date-nav .date-arrows button {
+      width: 36px; height: 36px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--bg-card); color: var(--text);
+      cursor: pointer; font-size: 16px;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .date-nav .date-arrows button:hover {
+      border-color: var(--accent); background: var(--accent-light);
+    }
+    .date-nav .date-arrows button:disabled {
+      opacity: 0.3; cursor: not-allowed;
+    }
+
+    /* ===== STREAK ===== */
+    .streak-bar {
+      display: flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, #fef9e7, #fef3c7);
+      border: 1px solid #fde68a;
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      margin-bottom: 16px;
+      font-size: 13px; font-weight: 600;
+      color: #92400e;
+    }
+    .streak-bar .fire { font-size: 18px; }
+
+    /* ===== ENTRY CARD ===== */
+    .entry-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    .entry-section .section-title {
+      font-size: 14px; font-weight: 600; color: var(--text-bright);
+      margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .entry-section .section-title .badge {
+      font-size: 10px; padding: 2px 8px; border-radius: 10px;
+      background: var(--accent-light); color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* ===== TODO LIST ===== */
+    .todo-list { list-style: none; }
+    .todo-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+    }
+    .todo-item:last-child { border-bottom: none; }
+    .todo-item input[type="checkbox"] {
+      width: 18px; height: 18px; flex-shrink: 0;
+      accent-color: var(--accent); cursor: pointer;
+      border-radius: 4px;
+    }
+    .todo-item .todo-text {
+      flex: 1; font-size: 14px; color: var(--text);
+    }
+    .todo-item .todo-text.done {
+      text-decoration: line-through; color: var(--text-dim);
+    }
+    .todo-item .todo-del {
+      background: none; border: none; color: var(--text-dim);
+      cursor: pointer; font-size: 16px; padding: 2px 4px;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .todo-item:hover .todo-del { opacity: 1; }
+    .todo-item .todo-del:hover { color: var(--danger); }
+
+    .todo-add {
+      display: flex; gap: 8px; margin-top: 10px;
+    }
+    .todo-add input {
+      flex: 1; padding: 8px 12px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 14px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .todo-add input:focus { border-color: var(--border-focus); }
+    .todo-add button {
+      padding: 8px 16px;
+      background: var(--accent); color: #fff; border: none;
+      border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .todo-add button:hover { background: #3d6fc0; }
+
+    /* ===== ACCOMPLISHMENTS ===== */
+    .accomp-list { list-style: none; }
+    .accomp-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+    }
+    .accomp-item:last-child { border-bottom: none; }
+    .accomp-item .bullet {
+      color: var(--success); font-size: 16px; flex-shrink: 0; margin-top: 1px;
+    }
+    .accomp-item .accomp-text {
+      flex: 1; font-size: 14px; color: var(--text);
+    }
+    .accomp-item .accomp-del {
+      background: none; border: none; color: var(--text-dim);
+      cursor: pointer; font-size: 16px; padding: 2px 4px;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .accomp-item:hover .accomp-del { opacity: 1; }
+    .accomp-item .accomp-del:hover { color: var(--danger); }
+
+    .accomp-add {
+      display: flex; gap: 8px; margin-top: 10px;
+    }
+    .accomp-add input {
+      flex: 1; padding: 8px 12px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 14px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .accomp-add input:focus { border-color: var(--border-focus); }
+    .accomp-add button {
+      padding: 8px 16px;
+      background: var(--success); color: #fff; border: none;
+      border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .accomp-add button:hover { background: #16a34a; }
+
+    /* ===== REFLECTION ===== */
+    .reflection-textarea {
+      width: 100%; min-height: 100px;
+      padding: 12px 14px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 14px; font-family: var(--font);
+      color: var(--text); background: var(--bg-input);
+      resize: vertical; outline: none;
+      transition: border-color 0.2s;
+    }
+    .reflection-textarea:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    /* ===== ACTION BUTTONS ===== */
+    .actions {
+      display: flex; gap: 10px;
+      margin-bottom: 24px;
+    }
+    .actions button {
+      flex: 1; padding: 12px 20px;
+      border: none; border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .actions .btn-save {
+      background: var(--accent); color: #fff;
+    }
+    .actions .btn-save:hover {
+      background: #3d6fc0;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+    .actions .btn-export {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .actions .btn-export:hover {
+      border-color: var(--accent); color: var(--accent);
+    }
+
+    /* ===== SAVE TOAST ===== */
+    .save-toast {
+      position: fixed;
+      bottom: 30px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--accent); color: #fff;
+      padding: 12px 28px; border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 600;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      opacity: 0;
+      transition: transform 0.4s ease, opacity 0.4s ease;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .save-toast.active {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ===== HISTORY SIDEBAR ===== */
+    .history-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+    }
+    .history-section .history-title {
+      font-size: 14px; font-weight: 600; color: var(--text-bright);
+      margin-bottom: 12px;
+    }
+    .history-list {
+      display: flex; flex-direction: column; gap: 6px;
+      max-height: 300px; overflow-y: auto;
+    }
+    .history-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 13px;
+    }
+    .history-item:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+    .history-item .h-date {
+      font-weight: 600; color: var(--text);
+    }
+    .history-item .h-status {
+      font-size: 11px; color: var(--text-dim);
+    }
+    .history-item .h-status.has-entry {
+      color: var(--success);
+    }
+    .history-item.current {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      text-align: center; padding: 40px 20px;
+      color: var(--text-dim);
+    }
+    .empty-state .big-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state p { font-size: 14px; }
+
+    /* ===== PRINT STYLES (Export PDF) ===== */
+    @media print {
+      body { background: #fff; padding: 0; }
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      .entry-section { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
+      .app-header { break-inside: avoid; box-shadow: none; }
+      .date-nav { break-inside: avoid; box-shadow: none; }
+    }
+    .print-only { display: none; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      .profile-grid { grid-template-columns: 1fr; }
+      .actions { flex-direction: column; }
+      .date-nav { flex-direction: column; gap: 8px; }
+      body { padding: 12px 8px; }
+      .entry-section { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== SAVE TOAST ===== -->
+  <div class="save-toast no-print" id="saveToast">Saved!</div>
+
+  <div class="container">
+
+    <!-- ===== HEADER ===== -->
+    <div class="app-header no-print">
+      <div class="logo">
+        <div class="icon">📓</div>
+        <div>
+          <h1>Lab<span>Log</span></h1>
+          <div class="sub">Daily Lab Journal</div>
+        </div>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-field">
+          <label for="fieldName">Name</label>
+          <input type="text" id="fieldName" placeholder="Your full name" />
+        </div>
+        <div class="profile-field">
+          <label for="fieldSection">Section</label>
+          <input type="text" id="fieldSection" placeholder="e.g., BSCS-2A" />
+        </div>
+        <div class="profile-field">
+          <label for="fieldProfessor">Professor</label>
+          <input type="text" id="fieldProfessor" placeholder="Professor name" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== STREAK BAR ===== -->
+    <div class="streak-bar no-print" id="streakBar">
+      <span class="fire">🔥</span>
+      <span id="streakText">0-day streak. Start your lab journal today!</span>
+    </div>
+
+    <!-- ===== DATE NAV ===== -->
+    <div class="date-nav no-print">
+      <div>
+        <div class="date-display">
+          <span id="displayDate">Loading...</span>
+          <span class="day-name" id="displayDay"></span>
+        </div>
+      </div>
+      <div class="date-arrows">
+        <button id="btnPrev" title="Previous day">&larr;</button>
+        <button id="btnToday" title="Today" style="padding:0 12px;width:auto;font-size:12px;font-weight:600;">Today</button>
+        <button id="btnNext" title="Next day">&rarr;</button>
+      </div>
+    </div>
+
+    <!-- ===== TODO SECTION ===== -->
+    <div class="entry-section">
+      <div class="section-title">
+        📋 Todo / Plan
+        <span class="badge">Plan before lab</span>
+      </div>
+      <ul class="todo-list" id="todoList"></ul>
+      <div class="todo-add no-print">
+        <input type="text" id="todoInput" placeholder="Add a task..." />
+        <button id="btnAddTodo">Add</button>
+      </div>
+    </div>
+
+    <!-- ===== ACCOMPLISHMENTS ===== -->
+    <div class="entry-section">
+      <div class="section-title">
+        ✅ Accomplishments
+        <span class="badge">What you did</span>
+      </div>
+      <ul class="accomp-list" id="accompList"></ul>
+      <div class="accomp-add no-print">
+        <input type="text" id="accompInput" placeholder="What did you accomplish?" />
+        <button id="btnAddAccomp">Add</button>
+      </div>
+    </div>
+
+    <!-- ===== REFLECTION ===== -->
+    <div class="entry-section">
+      <div class="section-title">
+        📝 Notes / Reflection
+        <span class="badge">Free thoughts</span>
+      </div>
+      <textarea class="reflection-textarea" id="reflectionText" placeholder="Write your thoughts, challenges, learnings for today..."></textarea>
+    </div>
+
+    <!-- ===== ACTIONS ===== -->
+    <div class="actions no-print">
+      <button class="btn-save" id="btnSave">💾 Save Entry</button>
+      <button class="btn-export" id="btnExport">📄 Export All to PDF</button>
+    </div>
+
+    <!-- ===== HISTORY ===== -->
+    <div class="history-section no-print">
+      <div class="history-title">📅 Entry History</div>
+      <div class="history-list" id="historyList">
+        <div class="empty-state" style="padding:20px;">
+          <p>No entries yet. Save your first entry!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PRINT EXPORT (hidden on screen) ===== -->
+    <div class="print-only" id="printExport">
+      <div style="text-align:center;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #000;">
+        <h1 style="font-size:24px;margin-bottom:4px;">📓 LabLog — Compilation</h1>
+        <p id="printStudent" style="font-size:14px;color:#555;"></p>
+        <p id="printDateRange" style="font-size:12px;color:#888;"></p>
+      </div>
+      <div id="printEntries"></div>
+      <div style="text-align:center;margin-top:24px;padding-top:16px;border-top:1px solid #ccc;font-size:11px;color:#999;">
+        Generated by LabLog — Daily Lab Journal
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // =============================================
+    //  1. STATE
+    // =============================================
+    const STORAGE_KEY = 'lablog_entries';
+    const PROFILE_KEY = 'lablog_profile';
+    const TODAY = new Date();
+    const DAY_MS = 86400000;
+
+    let currentDate = new Date(TODAY);
+    let entries = {};
+    let profile = { name: '', section: '', professor: '' };
+
+    // =============================================
+    //  2. STORAGE HELPERS
+    // =============================================
+    function loadEntries() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY);
+        entries = data ? JSON.parse(data) : {};
+      } catch { entries = {}; }
+    }
+
+    function saveEntries() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    }
+
+    function loadProfile() {
+      try {
+        const data = localStorage.getItem(PROFILE_KEY);
+        if (data) {
+          profile = JSON.parse(data);
+          document.getElementById('fieldName').value = profile.name || '';
+          document.getElementById('fieldSection').value = profile.section || '';
+          document.getElementById('fieldProfessor').value = profile.professor || '';
+        }
+      } catch {}
+    }
+
+    function saveProfile() {
+      profile.name = document.getElementById('fieldName').value.trim();
+      profile.section = document.getElementById('fieldSection').value.trim();
+      profile.professor = document.getElementById('fieldProfessor').value.trim();
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    }
+
+    // =============================================
+    //  3. DATE HELPERS
+    // =============================================
+    function formatDateKey(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatDisplayDate(date) {
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      return date.toLocaleDateString('en-US', options);
+    }
+
+    function getDayName(date) {
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      return days[date.getDay()];
+    }
+
+    function isToday(date) {
+      const d = formatDateKey(date);
+      return d === formatDateKey(TODAY);
+    }
+
+    function normalizeDate(date) {
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    }
+
+    function getDateRange() {
+      const keys = Object.keys(entries).sort();
+      if (keys.length === 0) return 'No entries';
+      return keys[0] + ' to ' + keys[keys.length - 1];
+    }
+
+    // =============================================
+    //  4. STREAK CALC
+    // =============================================
+    function calcStreak() {
+      const keys = Object.keys(entries).sort().reverse();
+      if (keys.length === 0) return 0;
+
+      let streak = 0;
+      let check = normalizeDate(TODAY);
+
+      // Check if today has an entry (with todo or accomp or reflection)
+      const todayKey = formatDateKey(check);
+      if (keys[0] === todayKey && hasContent(entries[todayKey])) {
+        streak = 1;
+      } else if (keys[0] !== todayKey) {
+        // If no entry today, start checking from yesterday
+        check = new Date(check.getTime() - DAY_MS);
+      } else {
+        // Today has entry, count it
+        streak = 1;
+        check = new Date(check.getTime() - DAY_MS);
+      }
+
+      // Check consecutive days backwards
+      while (true) {
+        const key = formatDateKey(check);
+        if (keys.includes(key) && hasContent(entries[key])) {
+          streak++;
+          check = new Date(check.getTime() - DAY_MS);
+        } else {
+          break;
+        }
+      }
+
+      return streak;
+    }
+
+    function hasContent(entry) {
+      if (!entry) return false;
+      return (entry.todos && entry.todos.length > 0) ||
+             (entry.accomps && entry.accomps.length > 0) ||
+             (entry.reflection && entry.reflection.trim());
+    }
+
+    function updateStreak() {
+      const streak = calcStreak();
+      const el = document.getElementById('streakText');
+      if (streak === 0) {
+        el.textContent = 'No active streak. Start your lab journal today!';
+      } else if (streak === 1) {
+        el.textContent = '🔥 1-day streak! Keep going!';
+      } else {
+        el.textContent = `🔥 ${streak}-day streak! You're on fire!`;
+      }
+    }
+
+    // =============================================
+    //  5. RENDER ENTRY
+    // =============================================
+    function renderEntry() {
+      const key = formatDateKey(currentDate);
+      const entry = entries[key] || { todos: [], accomps: [], reflection: '' };
+
+      // Date display
+      document.getElementById('displayDate').textContent = formatDisplayDate(currentDate);
+      document.getElementById('displayDay').textContent = getDayName(currentDate);
+      document.getElementById('btnToday').style.display = isToday(currentDate) ? 'none' : 'inline-flex';
+
+      // Navigation buttons
+      document.getElementById('btnPrev').disabled = false;
+      document.getElementById('btnNext').disabled = isToday(currentDate);
+
+      // Todos
+      const todoList = document.getElementById('todoList');
+      todoList.innerHTML = '';
+      if (entry.todos && entry.todos.length > 0) {
+        entry.todos.forEach((todo, i) => {
+          const li = document.createElement('li');
+          li.className = 'todo-item';
+          li.innerHTML = `
+            <input type="checkbox" ${todo.done ? 'checked' : ''} data-index="${i}" />
+            <span class="todo-text ${todo.done ? 'done' : ''}">${escapeHtml(todo.text)}</span>
+            <button class="todo-del" data-index="${i}" title="Delete">&times;</button>
+          `;
+          todoList.appendChild(li);
+        });
+      } else {
+        todoList.innerHTML = '<li class="todo-item" style="color:var(--text-dim);font-size:13px;border:none;">No tasks planned yet.</li>';
+      }
+
+      // Accomplishments
+      const accompList = document.getElementById('accompList');
+      accompList.innerHTML = '';
+      if (entry.accomps && entry.accomps.length > 0) {
+        entry.accomps.forEach((text, i) => {
+          const li = document.createElement('li');
+          li.className = 'accomp-item';
+          li.innerHTML = `
+            <span class="bullet">&#10003;</span>
+            <span class="accomp-text">${escapeHtml(text)}</span>
+            <button class="accomp-del" data-index="${i}" title="Delete">&times;</button>
+          `;
+          accompList.appendChild(li);
+        });
+      } else {
+        accompList.innerHTML = '<li class="accomp-item" style="color:var(--text-dim);font-size:13px;border:none;">No accomplishments recorded yet.</li>';
+      }
+
+      // Reflection
+      document.getElementById('reflectionText').value = entry.reflection || '';
+
+      // Update history
+      renderHistory();
+
+      // Update streak
+      updateStreak();
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // =============================================
+    //  6. SAVE ENTRY
+    // =============================================
+    function saveCurrentEntry() {
+      // Gather todos from DOM
+      const todoItems = document.querySelectorAll('#todoList .todo-item');
+      const todos = [];
+      todoItems.forEach((li) => {
+        const check = li.querySelector('input[type="checkbox"]');
+        const textSpan = li.querySelector('.todo-text');
+        if (textSpan && check) {
+          todos.push({ text: textSpan.textContent, done: check.checked });
+        }
+      });
+
+      // Gather accomps from DOM
+      const accompItems = document.querySelectorAll('#accompList .accomp-item');
+      const accomps = [];
+      accompItems.forEach((li) => {
+        const textSpan = li.querySelector('.accomp-text');
+        if (textSpan) {
+          accomps.push(textSpan.textContent);
+        }
+      });
+
+      // Gather reflection
+      const reflection = document.getElementById('reflectionText').value.trim();
+
+      const key = formatDateKey(currentDate);
+      entries[key] = { todos, accomps, reflection };
+
+      saveEntries();
+      saveProfile();
+
+      // Toast
+      showSaveToast('Entry saved!');
+
+      // Re-render
+      renderEntry();
+    }
+
+    function showSaveToast(msg) {
+      const toast = document.getElementById('saveToast');
+      toast.textContent = msg;
+      toast.classList.add('active');
+      setTimeout(() => toast.classList.remove('active'), 2000);
+    }
+
+    // =============================================
+    //  7. ADD/REMOVE TODOS
+    // =============================================
+    function addTodo() {
+      const input = document.getElementById('todoInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const key = formatDateKey(currentDate);
+      if (!entries[key]) entries[key] = { todos: [], accomps: [], reflection: '' };
+      if (!entries[key].todos) entries[key].todos = [];
+
+      entries[key].todos.push({ text, done: false });
+      saveEntries();
+      input.value = '';
+      renderEntry();
+    }
+
+    function toggleTodo(index) {
+      const key = formatDateKey(currentDate);
+      if (entries[key] && entries[key].todos && entries[key].todos[index]) {
+        entries[key].todos[index].done = !entries[key].todos[index].done;
+        saveEntries();
+        renderEntry();
+      }
+    }
+
+    function deleteTodo(index) {
+      const key = formatDateKey(currentDate);
+      if (entries[key] && entries[key].todos) {
+        entries[key].todos.splice(index, 1);
+        saveEntries();
+        renderEntry();
+      }
+    }
+
+    // =============================================
+    //  8. ADD/REMOVE ACCOMPS
+    // =============================================
+    function addAccomp() {
+      const input = document.getElementById('accompInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const key = formatDateKey(currentDate);
+      if (!entries[key]) entries[key] = { todos: [], accomps: [], reflection: '' };
+      if (!entries[key].accomps) entries[key].accomps = [];
+
+      entries[key].accomps.push(text);
+      saveEntries();
+      input.value = '';
+      renderEntry();
+    }
+
+    function deleteAccomp(index) {
+      const key = formatDateKey(currentDate);
+      if (entries[key] && entries[key].accomps) {
+        entries[key].accomps.splice(index, 1);
+        saveEntries();
+        renderEntry();
+      }
+    }
+
+    // =============================================
+    //  9. HISTORY
+    // =============================================
+    function renderHistory() {
+      const keys = Object.keys(entries).sort().reverse();
+      const el = document.getElementById('historyList');
+
+      if (keys.length === 0) {
+        el.innerHTML = '<div class="empty-state" style="padding:20px;"><p>No entries yet. Save your first entry!</p></div>';
+        return;
+      }
+
+      const currentKey = formatDateKey(currentDate);
+      let html = '';
+      keys.forEach((key) => {
+        const entry = entries[key];
+        const hasData = hasContent(entry);
+        const isCurrent = key === currentKey;
+        const date = new Date(key + 'T12:00:00');
+        const display = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const status = hasData ? 'Has entry' : 'Empty';
+        const statusClass = hasData ? 'has-entry' : '';
+        html += `
+          <div class="history-item ${isCurrent ? 'current' : ''}" data-date="${key}">
+            <span class="h-date">${display}</span>
+            <span class="h-status ${statusClass}">${status}</span>
+          </div>
+        `;
+      });
+      el.innerHTML = html;
+
+      // Click to navigate
+      el.querySelectorAll('.history-item').forEach((item) => {
+        item.addEventListener('click', function() {
+          const dateStr = this.getAttribute('data-date');
+          const parts = dateStr.split('-');
+          currentDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+          renderEntry();
+        });
+      });
+    }
+
+    // =============================================
+    //  10. EXPORT TO PDF
+    // =============================================
+    function exportPDF() {
+      const sortedKeys = Object.keys(entries).sort();
+      if (sortedKeys.length === 0) {
+        showSaveToast('No entries to export yet.');
+        return;
+      }
+
+      // Set student info
+      const studentName = document.getElementById('fieldName').value.trim() || '(No name)';
+      const section = document.getElementById('fieldSection').value.trim() || '(No section)';
+      const prof = document.getElementById('fieldProfessor').value.trim() || '(No professor)';
+      document.getElementById('printStudent').textContent = `${studentName} — ${section} | Prof: ${prof}`;
+      document.getElementById('printDateRange').textContent = `Entries: ${sortedKeys.length} day(s)`;
+
+      // Build entries
+      const printEntries = document.getElementById('printEntries');
+      printEntries.innerHTML = '';
+
+      sortedKeys.forEach((key) => {
+        const entry = entries[key];
+        if (!hasContent(entry)) return;
+
+        const date = new Date(key + 'T12:00:00');
+        const display = date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        let html = `
+          <div style="margin-bottom:20px;padding:16px;border:1px solid #ccc;border-radius:4px;page-break-inside:avoid;">
+            <h3 style="font-size:16px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #eee;">${display}</h3>
+        `;
+
+        if (entry.todos && entry.todos.length > 0) {
+          html += '<div style="margin-bottom:8px;"><strong style="font-size:13px;">📋 Todo / Plan:</strong><ul style="margin:4px 0 0 16px;">';
+          entry.todos.forEach((todo) => {
+            const status = todo.done ? '✅' : '⬜';
+            html += `<li style="font-size:12px;margin-bottom:2px;">${status} ${escapeHtml(todo.text)}</li>`;
+          });
+          html += '</ul></div>';
+        }
+
+        if (entry.accomps && entry.accomps.length > 0) {
+          html += '<div style="margin-bottom:8px;"><strong style="font-size:13px;">✅ Accomplishments:</strong><ul style="margin:4px 0 0 16px;">';
+          entry.accomps.forEach((text) => {
+            html += `<li style="font-size:12px;margin-bottom:2px;">${escapeHtml(text)}</li>`;
+          });
+          html += '</ul></div>';
+        }
+
+        if (entry.reflection && entry.reflection.trim()) {
+          html += `<div style="margin-bottom:4px;"><strong style="font-size:13px;">📝 Notes:</strong><p style="font-size:12px;margin:4px 0 0 0;color:#444;">${escapeHtml(entry.reflection)}</p></div>`;
+        }
+
+        html += '</div>';
+        printEntries.innerHTML += html;
+      });
+
+      if (printEntries.innerHTML === '') {
+        showSaveToast('No entries with content to export.');
+        return;
+      }
+
+      // Print
+      window.print();
+    }
+
+    // =============================================
+    //  11. EVENT LISTENERS
+    // =============================================
+    // Date nav
+    document.getElementById('btnPrev').addEventListener('click', function() {
+      currentDate = new Date(currentDate.getTime() - DAY_MS);
+      renderEntry();
+    });
+
+    document.getElementById('btnNext').addEventListener('click', function() {
+      if (isToday(currentDate)) return;
+      currentDate = new Date(currentDate.getTime() + DAY_MS);
+      // Clamp to today
+      if (currentDate > TODAY) currentDate = new Date(TODAY);
+      renderEntry();
+    });
+
+    document.getElementById('btnToday').addEventListener('click', function() {
+      currentDate = new Date(TODAY);
+      renderEntry();
+    });
+
+    // Todo
+    document.getElementById('btnAddTodo').addEventListener('click', addTodo);
+    document.getElementById('todoInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') addTodo();
+    });
+
+    // Delegate for todo toggle/delete
+    document.getElementById('todoList').addEventListener('click', function(e) {
+      const target = e.target;
+      if (target.tagName === 'INPUT' && target.type === 'checkbox') {
+        toggleTodo(parseInt(target.getAttribute('data-index')));
+      }
+      if (target.tagName === 'BUTTON' && target.classList.contains('todo-del')) {
+        deleteTodo(parseInt(target.getAttribute('data-index')));
+      }
+    });
+
+    // Accomp
+    document.getElementById('btnAddAccomp').addEventListener('click', addAccomp);
+    document.getElementById('accompInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') addAccomp();
+    });
+
+    document.getElementById('accompList').addEventListener('click', function(e) {
+      const target = e.target;
+      if (target.tagName === 'BUTTON' && target.classList.contains('accomp-del')) {
+        deleteAccomp(parseInt(target.getAttribute('data-index')));
+      }
+    });
+
+    // Save
+    document.getElementById('btnSave').addEventListener('click', saveCurrentEntry);
+
+    // Auto-save on reflection blur
+    document.getElementById('reflectionText').addEventListener('blur', function() {
+      saveCurrentEntry();
+    });
+
+    // Profile auto-save on blur
+    document.querySelectorAll('.profile-field input').forEach((input) => {
+      input.addEventListener('blur', saveProfile);
+    });
+
+    // Export
+    document.getElementById('btnExport').addEventListener('click', exportPDF);
+
+    // Keyboard shortcut: Ctrl+S to save
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveCurrentEntry();
+      }
+    });
+
+    // =============================================
+    //  12. INIT
+    // =============================================
+    loadEntries();
+    loadProfile();
+    renderEntry();
+  </script>
+
+</body>
+</html>
